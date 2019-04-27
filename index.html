@@ -1,3 +1,56 @@
+<script src="jquery.js"></script>
 <script src="schulen.js"></script>
-<ul id="myList">
-</ul>
+<html>
+  <body></body>
+  <div class="form">
+    <form method="GET">
+      <h2>Adressen für Schulen im Umkreis von Flensburg generieren</h2>
+      <label>Umkreis für die Suche</label><br/>
+      <input name="km" placeholder="Kilometer" type="number"/><br/>
+      <button type="submit">Adressen generieren</button>
+    </form>
+  </div>
+</html>
+<style>
+  @page {
+    size: A4;
+    margin: 0;
+}
+html, body{
+  margin: 0;
+  padding: 0;
+}
+.label{
+  background: white;
+  display: block;
+  margin: 0;
+  width: 21cm;
+  height: 14.42cm; 
+  padding: 30px;
+  /* border: 1px solid black; */
+  position: relative;
+}
+
+.empfaenger{
+  margin-right: 0px;
+  float: right;
+  right: 70px;
+  bottom: 70px;
+  position: absolute;
+  font-size: 30px;
+}
+.sender{
+  margin-left: 70px;
+  margin-top: 70px;
+  font-size: 20px;
+}
+.empfaenger .name{
+  font-weight: bold;
+  display: block;
+}
+
+.sender .name{
+  font-weight: bold;
+}
+</style>
+
