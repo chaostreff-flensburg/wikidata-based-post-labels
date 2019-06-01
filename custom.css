@@ -1,0 +1,34 @@
+@media print {
+  /* styles go here */
+  .hide-printing {
+    display: none;
+  }
+ }
+ .address-label{
+   margin: 0 0;
+   padding: 0 0;
+   height: 19.25cm;
+   width: 100%;
+   position: relative;
+ }
+ .sender {
+  margin-left: 0px;
+  position: absolute;
+  top: 30px;
+  left: 30px;
+ }
+ .receiver{
+   margin-right: 0px;
+   width: 450px;
+   position: absolute;
+   bottom: 80px;
+   right: 20px;
+ }
+
+ .receiver .placeName{
+   font-weight: bold;
+   font-size: 1.5em;
+ }
+ .receiver .receiverText{
+   font-size: 0.7em;
+ }

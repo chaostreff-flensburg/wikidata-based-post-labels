@@ -1,56 +1,179 @@
-<script src="jquery.js"></script>
-<script src="schulen.js"></script>
+<!DOCTYPE html>
 <html>
-  <body></body>
-  <div class="form">
-    <form method="GET">
-      <h2>Adressen für Schulen im Umkreis von Flensburg generieren</h2>
-      <label>Umkreis für die Suche</label><br/>
-      <input name="km" placeholder="Kilometer" type="number"/><br/>
-      <button type="submit">Adressen generieren</button>
-    </form>
-  </div>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>Adress Aufklebe Generator</title>
+    <link
+          type="text/css"
+          rel="stylesheet"
+          href="https://unpkg.com/bootstrap/dist/css/bootstrap.min.css"
+        />
+    <link
+          type="text/css"
+          rel="stylesheet"
+          href="https://unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.css"
+        />
+        <link 
+          href="https://unpkg.com/vue-bootstrap-typeahead/dist/VueBootstrapTypeahead.css" 
+          rel="stylesheet"
+          >
+    <link 
+      href="custom.css" 
+      rel="stylesheet"
+    >
+  </head>
+  <body>
+    <div id="app">
+      <div class="">
+      <div class="m-5 hide-printing">
+      <h1 class="hide-printing">Adress Aufklebe Generator</h1>
+      <span class="text-mute mb-3 hide-printing">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. </span>
+      <b-card no-body class="hide-printing">
+        <b-tabs card>
+          <b-tab title="Simple Einstellung" active>
+            <b-card-text>
+              <b-container>
+                <b-row>
+                    <b-col
+                    >
+                    <h5>Gemeinde</h5>
+                    <vue-bootstrap-typeahead
+                      v-model="query"
+                      :data="placeOfOrigionOptions"
+                      :serializer="s => s.text"
+                      placeholder="Gemeinde Name eingeben"
+                      @hit="selectedPlaceOfOrigin = $event"
+                      maxMatches="25"
+                    />
+                    </b-col>
+                    <b-col>
+                      <h5>Typ</h5>
+                        <b-form-select 
+                          v-model="selectedInstitution" 
+                          :options="instituionOptions"
+                          required
+                        >
+                        </b-form-select>
+                    </b-col>
+                    <b-col
+                     cols="2"
+                    >
+                    <h5>Umkreis</h5>
+                      <b-form-input 
+                        v-model="selectedRadius"
+                        placeholder="Bitte gib einem Kilometer Wert an"
+                        type="number"
+                        required
+                      >
+                      </b-form-input>
+                    </b-col>
+                </b-row>
+              </b-container>
+              <b-container 
+                class="mt-3" 
+                >
+                <b-button
+                  type="success"
+                  @click="callWikiData()"
+                >
+                  Adress Labels in Wiki Data suchen
+                </b-button>
+                <b-button
+                  type="primary"
+                  :disabled="labelsGenerated"
+                  @click="printAddressLabels()"
+                  >
+                  Labels Drucken
+                </b-button>
+              </b-container>
+            </b-card-text>
+          </b-tab>
+          <b-tab title="Erweiterte Einstellungen">
+            <b-card-text>
+                <h4>Abesender Informationen</h4>
+                <b-row>
+                    <b-col>
+                      <span>Aktiviert</span>
+                      <b-form-select v-model="sender.activated" :options="[{value: 'false', text: 'Nicht Aktiviert'},{value: 'true', text: 'Aktiviert'}]"></b-form-select>
+                    </b-col>
+                    <b-col>
+                      <span>Name</span>
+                      <b-form-input v-model="sender.name" placeholder=""></b-form-input>
+                    </b-col>
+                    <b-col>
+                      <span>Straße Hausenummer</span>
+                      <b-form-input v-model="sender.streetHousenumber" placeholder=""></b-form-input>
+                    </b-col>
+                    <b-col>
+                      <span>Plz Ort</span>
+                      <b-form-input v-model="sender.zipCodeCity" placeholder=""></b-form-input>
+                    </b-col>
+                </b-row>
+            </b-card-text>
+          </b-tab>
+        </b-tabs>
+      </b-card>
+      
+      <div v-if="loadingQuery">
+         <b-spinner 
+          variant="success" 
+          label="Spinning"
+        >
+        </b-spinner>
+      </div>
+    </div>
+      <div v-if="!labelsGenerated">
+        <div 
+          v-if="wikiDataAdresses && wikiDataAdresses.results && wikiDataAdresses.results.bindings"
+        >
+          <b-container class="hide-printing">
+              <b-row>
+                  <b-col>
+                    Gefundene Adressen: {{wikiDataAdresses.results.bindings.length}}
+                  </b-col>
+                  <b-col>
+                      Timestamp: {{Date.now()}}
+                  </b-col>
+              </b-row>
+          </b-container>
+
+          <div 
+            v-for="(address, index) in wikiDataAdresses.results.bindings"
+            class="address-label"
+          >
+
+          <div 
+            v-if="sender.activated"
+            class="sender"
+          >
+              <span class="receiverText">Sender:</span><br/>
+              <span class="placeName">{{sender.name}}</span><br/>
+              <span class="placeName">{{sender.streetHousenumber}}</span><br/>
+              <span class="placeName">{{sender.zipCodeCity}}</span><br/>
+              </span>
+            </div>
+
+          <div class="receiver">
+            <span class="receiverText">Empfänger:</span><br/>
+            <span class="placeName">{{address.placeLabel.value}}</span><br/>
+            <span 
+              class="text-muted"
+              v-if="address.schueler && address.schueler.value > 0"
+            >
+              Anzahl Schüler*innen: {{address.schueler.value}}<br/>
+            </span>
+            <span  v-html="parseAdress(address.address.value)">
+            </span>
+          </div>
+          </div>
+        </div>
+      </div>
+      </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+    <script src="https://unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.js"></script>
+    <script src="https://unpkg.com/vue-bootstrap-typeahead"></script>
+    <script src="index.js"></script>
+  </body>
 </html>
-<style>
-  @page {
-    size: A4;
-    margin: 0;
-}
-html, body{
-  margin: 0;
-  padding: 0;
-}
-.label{
-  background: white;
-  display: block;
-  margin: 0;
-  width: 21cm;
-  height: 14.42cm; 
-  padding: 30px;
-  /* border: 1px solid black; */
-  position: relative;
-}
-
-.empfaenger{
-  margin-right: 0px;
-  float: right;
-  right: 70px;
-  bottom: 70px;
-  position: absolute;
-  font-size: 30px;
-}
-.sender{
-  margin-left: 70px;
-  margin-top: 70px;
-  font-size: 20px;
-}
-.empfaenger .name{
-  font-weight: bold;
-  display: block;
-}
-
-.sender .name{
-  font-weight: bold;
-}
-</style>
-
